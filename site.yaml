@@ -1,0 +1,60 @@
+---
+- hosts: webservers
+  become: yes
+  tasks:
+   - name: installing nginx 
+     apt:
+      name: nginx 
+      state: latest
+      update_cache: yes
+   - name: installing of php-fpm,php7
+     apt:
+      name: php7.4-fpm
+      state: latest
+   - name: Nginx is intalled
+     service:
+         name: nginx
+         state: started
+   - name: php file is copied
+     copy:
+       src: ./index.php
+       dest: /var/www/html/
+   - name: default file is added
+     template:
+       src: nginx.conf
+       dest: /etc/nginx/sites-available/default
+
+   - name: Enable the configuration Nginx available site
+     file:
+       src: /etc/nginx/sites-available/default
+       dest: /etc/nginx/sites-enabled/default
+       state: link
+
+   - name: Web Servers restart
+     service:
+          name: nginx
+          state: restarted
+
+- hosts: haproxy
+  become: yes
+  vars:
+    haproxy_mode: http
+    haproxy_algorithm: roundrobin
+    haproxy_backend_servers: Web_servers
+  tasks:
+   - name: haproxy updated
+     apt:
+      name: haproxy
+      state: latest
+      update_cache: yes
+   
+
+   - name: HAProxy config file
+     template:
+      src: haproxy.cfg.j2
+      dest: /etc/haproxy/haproxy.cfg
+
+   - name: Restart HAProxy
+     service:
+       name: haproxy
+       state: restarted
