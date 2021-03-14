@@ -21,7 +21,7 @@
        dest: /var/www/html/
    - name: default file is added
      template:
-       src: nginx.conf
+       src: ./default
        dest: /etc/nginx/sites-available/default
 
    - name: Enable the configuration Nginx available site
